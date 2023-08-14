@@ -3,3 +3,8 @@ C:\Users\taekw\Source\Repos\Kor-Lazyman\Project\project\BeerGame\Cost\obj\Debug\
 C:\Users\taekw\Source\Repos\Kor-Lazyman\Project\project\BeerGame\Cost\obj\Debug\net6.0\Cost.AssemblyInfoInputs.cache
 C:\Users\taekw\Source\Repos\Kor-Lazyman\Project\project\BeerGame\Cost\obj\Debug\net6.0\Cost.AssemblyInfo.cs
 C:\Users\taekw\Source\Repos\Kor-Lazyman\Project\project\BeerGame\Cost\obj\Debug\net6.0\Cost.csproj.CoreCompileInputs.cache
+C:\Users\User\Desktop\project\BeerGame\Cost\obj\Debug\net6.0\Cost.csproj.AssemblyReference.cache
+C:\Users\User\Desktop\project\BeerGame\Cost\obj\Debug\net6.0\Cost.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\Desktop\project\BeerGame\Cost\obj\Debug\net6.0\Cost.AssemblyInfoInputs.cache
+C:\Users\User\Desktop\project\BeerGame\Cost\obj\Debug\net6.0\Cost.AssemblyInfo.cs
+C:\Users\User\Desktop\project\BeerGame\Cost\obj\Debug\net6.0\Cost.csproj.CoreCompileInputs.cache
