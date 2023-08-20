@@ -45,8 +45,8 @@ namespace config
 
     public class Variables
     {
-        public static bool Ver_simulation = false;
-        public static bool Ver_print = false;
+        public static bool Ver_simulation = true;
+        public static bool Ver_print = true;
         public static bool COST_VALID = false;
         public static bool VISUAL = false;
         public static bool SPECIFIC_HOLDING_COST = false;
