@@ -169,13 +169,20 @@ namespace envinorment
             Daily_production_cost = 0;
             Process_stop_cost = 0;
 
+
         }
 
         public IEnumerable<Event> Process()
         {
-            int day = 0;
+            DateTime startday = new DateTime(1970, 1, 1, 0, 0, 0);
+            
+
+
+
             while (true)
             {
+                TimeSpan elapsedTime = Env.Now - startday;
+                int day = (int)elapsedTime.TotalDays;
                 bool shortageCheck = false;
                 foreach (var inven in Input_inventories)
                 {
@@ -203,17 +210,14 @@ namespace envinorment
                     double processing_time = 24.0 / Production_rate;
                     yield return Env.Timeout(TimeSpan.FromHours(processing_time));
 
-                    DateTime now = Env.Now;
-                    DateTime start = DateTime.MinValue;
-                    TimeSpan elapsedTime = now - start;
-                   
-                    
+
+
 
                     if (Variables.Ver_simulation)
                     {
                         Console.WriteLine($"{Env.Now}: {Process_id} 작업 시작");
                     }
-
+                    
                     for (int i = 0; i < Input_inventories.Count; i++)
                     {
                         Inventory inven = Input_inventories[i];
@@ -225,8 +229,9 @@ namespace envinorment
                             double holdingCost = inven.Level * Variables.I[inven.item_id].HOLD_COST;
                             Console.WriteLine($"{Env.Now}: {Variables.I[inven.item_id].NAME}의 보유 비용: {Math.Round(holdingCost, 2)}");
                         }
-
-                        etc.EventHoldingCost[day][inven.item_id]=(Math.Round((inven.Level * Variables.I[inven.item_id].HOLD_COST, 2)));
+                        
+                        etc.EventHoldingCost[day][inven.item_id]=((int)(inven.Level * Variables.I[inven.item_id].HOLD_COST));
+                       
                     }
 
                     Output_inventory.Level += 1;
@@ -234,18 +239,17 @@ namespace envinorment
 
                     if (Variables.Ver_simulation)
                     {
-                        Console.WriteLine($"{Env.Now}: {Output} 1개를 생산했습니다.");
-                        Console.WriteLine($"{Env.Now}: {Output}의 재고 수준: {Output_inventory.Level}");
+                        Console.WriteLine($"{Env.Now}: {Variables.I[Output_inventory.item_id].TYPE} 1개를 생산했습니다.");
+                        Console.WriteLine($"{Env.Now}: {Variables.I[Output_inventory.item_id].TYPE}의 재고 수준: {Output_inventory.Level}");
                         double outputHoldingCost = Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST;
-                        Console.WriteLine($"{Env.Now}: {Output}의 보유 비용: {Math.Round(outputHoldingCost, 2)}");
+                        Console.WriteLine($"{Env.Now}: {Variables.I[Output_inventory.item_id].TYPE}의 보유 비용: {Math.Round(outputHoldingCost, 2)}");
                     }
-                    etc.EventHoldingCost[day][-1]=(Math.Round(Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST, 2));
+                    etc.EventHoldingCost[day][0] = (Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST);
+                   
+                    etc.EventHoldingCost[day][Variables.I.Count-1]=( Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST);
 
-                    etc.EventHoldingCost[day][0]=(Math.Round((Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST, 2)));
+
                 }
-                
-               
-                day = day + 1;
             }
         }
 
@@ -389,7 +393,7 @@ namespace envinorment
 
             // make_event_holding_cost 메서드 호출로 이벤트 보유 비용 데이터 초기화
             etc.make_event_holding_cost(Variables.SIM_TIME, Variables.I.Count);
-            List<List<List<double>>> EventHoldingCost=etc.EventHoldingCost;
+            List<List<int>> EventHoldingCost = etc.EventHoldingCost;
 
             List<double> totalCostPerDay = new List<double>();
 
@@ -408,14 +412,14 @@ namespace envinorment
         static Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> Create_env()
         {
 
-            var simpy_env = new SimSharp.Simulation();
+            var SimShrp_env = new SimSharp.Simulation();
             List<Inventory> inventoryList = new List<Inventory>();
             foreach (int i in Variables.I.Keys)
             {
                 inventoryList.Add(new Inventory(i, Variables.I[i].HOLD_COST, Variables.I[i].SHORTAGE_COST, Variables.I[i].INIT_LEVEL));
             }
 
-            Customer customer = new Customer(simpy_env, "CUSTOMER", Variables.I[0].ID);
+            Customer customer = new Customer(SimShrp_env, "CUSTOMER", Variables.I[0].ID);
 
             List<Provider> providerList = new List<Provider>();
             List<Procurement> procurementList = new List<Procurement>();
@@ -423,12 +427,12 @@ namespace envinorment
             {
                 if (Variables.I[i].TYPE == "Raw Material")
                 {
-                    providerList.Add(new Provider(simpy_env, "PROVIDER_" + i.ToString(), i));
-                    procurementList.Add(new Procurement(simpy_env, Variables.I[i].ID, Variables.I[i].PURCHASE_COST, Variables.I[i].SETUP_COST_RAW));
+                    providerList.Add(new Provider(SimShrp_env, "PROVIDER_" + i.ToString(), i));
+                    procurementList.Add(new Procurement(SimShrp_env, Variables.I[i].ID, Variables.I[i].PURCHASE_COST, Variables.I[i].SETUP_COST_RAW));
                 }
             }
 
-            Sales sales = new Sales(simpy_env, customer.ItemId, Variables.I[0].DELIVERY_COST, Variables.I[0].SETUP_COST_RAW);
+            Sales sales = new Sales(SimShrp_env, customer.ItemId, Variables.I[0].DELIVERY_COST, Variables.I[0].SETUP_COST_RAW);
 
             List<Production> productionList = new List<Production>();
             foreach (int i in Variables.P.Keys)
@@ -441,22 +445,22 @@ namespace envinorment
                     inputInventories.Add(inventoryList[j.ID]);
                 }
                 Item Result_item_id = Variables.P[i].OUTPUT;
-                productionList.Add(new Production(simpy_env, "PROCESS_" + i.ToString(), Variables.P[i].ID,
+                productionList.Add(new Production(SimShrp_env, "PROCESS_" + i.ToString(), Variables.P[i].ID,
                                                    Variables.P[i].PRODUCTION_RATE, Result_item_id, inputInventories, outputInventory, Variables.P[i].PROCESS_COST));
             }
 
-            simpy_env.Process(customer.Order(sales, inventoryList[Variables.I[0].ID]));
+            SimShrp_env.Process(customer.Order(sales, inventoryList[Variables.I[0].ID]));
             foreach (var production in productionList)
             {
-                simpy_env.Process(production.Process());
+                SimShrp_env.Process(production.Process());
             }
             for (int i = 0; i < providerList.Count; i++)
             {
-                simpy_env.Process(procurementList[i].Order(providerList[i], inventoryList[providerList[i].Item_id]));
+                SimShrp_env.Process(procurementList[i].Order(providerList[i], inventoryList[providerList[i].Item_id]));
             }
 
             return new Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>>(
-                simpy_env, inventoryList, procurementList, productionList, sales, customer, providerList);
+                SimShrp_env, inventoryList, procurementList, productionList, sales, customer, providerList);
         }
 
         public static void Cal_cost(List<Inventory> inventoryList, List<Procurement> procurementList, List<Production> productionList, Sales sales, List<double> total_cost_per_day)
@@ -508,27 +512,29 @@ namespace envinorment
             }
             sales.DailySellingCost = 0;
         }
-       
+
     }
     class etc
     {
-        public static List<List<List<double>>> EventHoldingCost;
+        public static List<List<int>> EventHoldingCost;
 
         public static void make_event_holding_cost(int time, int itemCount)
         {
-            EventHoldingCost = new List<List<List<double>>>();
+            EventHoldingCost = new List<List<int>>();
 
             for (int i = 0; i < time; i++)
             {
-                List<List<double>> num = new List<List<double>>();
+                List<int> num = new List<int>(i);
                 for (int j = 0; j < itemCount; j++)
                 {
-                    num.Add(new List<double>());
+                    
+                    num.Add(i);
                 }
                 EventHoldingCost.Add(num);
             }
+            Console.WriteLine(EventHoldingCost[0]);
 
         }
     }
+ 
 }
-    

@@ -1,10 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "EBst1vZVXUL/sjTnAL7WGgaw2RuFuha9VkHVDivsDXuvQ6EE0LJwTA9s6YOJAhhNSMEmsVottNCRYOYvs2hxRQ==",
+  "dgSpecHash": "DC138nsQg6xoZyuCiEPOO3KL9ZGFRIYfcn2mYIKgpeWEqdgwUfP27tt2ZE34P5cEr3hWHmxtsLJNrNRDWSXd7A==",
   "success": true,
-  "projectFilePath": "C:\\Users\\taekw\\Source\\Repos\\Kor-Lazyman\\Project_beergame\\BeerGame\\Cost\\Cost.csproj",
+  "projectFilePath": "C:\\Users\\User\\Desktop\\project\\BeerGame\\Cost\\Cost.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\taekw\\.nuget\\packages\\simsharp\\3.4.2\\simsharp.3.4.2.nupkg.sha512"
+    "C:\\Users\\User\\.nuget\\packages\\simsharp\\3.4.2\\simsharp.3.4.2.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.21\\microsoft.windowsdesktop.app.ref.6.0.21.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.21\\microsoft.netcore.app.ref.6.0.21.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.21\\microsoft.aspnetcore.app.ref.6.0.21.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.21\\microsoft.netcore.app.host.win-x64.6.0.21.nupkg.sha512"
   ],
   "logs": []
 }
