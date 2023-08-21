@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualBasic;
@@ -52,7 +52,7 @@ namespace config
         public static bool SPECIFIC_HOLDING_COST = false;
         public static List<Process> EventHoldingCost = new List<Process>();
 
-        public static int SIM_TIME = 90;
+        public static int SIM_TIME = 18;
         public static int INITIAL_INVENTORY = 100;
         public static int EPISODES = 200;
         public static List<double> total_cost_per_day = new List<double>();
@@ -70,9 +70,11 @@ namespace config
 
         public static Dictionary<int, Item> I = new Dictionary<int, Item>();
         public static Dictionary<int, Process> P = new Dictionary<int, Process>();
-
+        public static int randomNumber;
         static Variables()
         {
+            Random random = new Random();
+            /*
             // I 딕셔너리 초기화
             I[0] = new Item { ID = 0, TYPE = "Product", NAME = "PRODUCT", INIT_LEVEL = 30, CUST_ORDER_CYCLE = 7, DEMAND_QUANTITY = 21, HOLD_COST = 5, SHORTAGE_COST = 10, SETUP_COST_PRO = 50, DELIVERY_COST = 10, DUE_DATE = 2, BACKORDER_COST = 5 };
             I[1] = new Item { ID = 1, TYPE = "Raw Material", NAME = "RAW MATERIAL 1.1", INIT_LEVEL = 30, MANU_ORDER_CYCLE = 7, SUP_LEAD_TIME = 7, LOT_SIZE_ORDER = 21, HOLD_COST = 1, SHORTAGE_COST = 2, PURCHASE_COST = 3, SETUP_COST_RAW = 20 };
@@ -83,7 +85,14 @@ namespace config
             // P 딕셔너리 초기화
             P[0] = new Process { ID = 0, PRODUCTION_RATE = 3, INPUT_LIST = new List<Item> { I[1] }, INPUT_USE_COUNT = new List<int> { 1 }, OUTPUT = I[4], PROCESS_COST = 5, PRO_STOP_COST = 2 };
             P[1] = new Process { ID = 1, PRODUCTION_RATE = 2, INPUT_LIST = new List<Item> { I[2], I[3], I[4] }, INPUT_USE_COUNT = new List<int> { 1, 1, 1 }, OUTPUT = I[0], PROCESS_COST = 6, PRO_STOP_COST = 3 };
-            foreach (int i in values)
+           */
+            randomNumber = new Random().Next(1, 5);
+            I[0]= new Item{ ID = 0, TYPE = "Product",      NAME = "PRODUCT",        INIT_LEVEL = 30, CUST_ORDER_CYCLE = 7, DEMAND_QUANTITY = 10,                                           HOLD_COST = 5, SHORTAGE_COST = 10,                     SETUP_COST_PRO = 50, DELIVERY_COST = 10, DUE_DATE = 30, BACKORDER_COST = 5};
+            I[1] = new Item{ ID = 1, TYPE = "Raw Material", NAME ="RAW MATERIAL 1", INIT_LEVEL = 30, MANU_ORDER_CYCLE = 1,                        SUP_LEAD_TIME = 7, LOT_SIZE_ORDER = 20, HOLD_COST = 1, SHORTAGE_COST = 2, PURCHASE_COST = 3,  SETUP_COST_RAW = 20};
+
+
+            P[0] = new Process{ ID= 0, PRODUCTION_RATE = 3, INPUT_LIST = new List<Item> { I[1] }            , INPUT_USE_COUNT = new List<int> { 1 }, OUTPUT= I[0], PROCESS_COST= 5, PRO_STOP_COST= 2};
+           /* foreach (int i in values)
             {
                 foreach (int j in values)
                 {
@@ -93,7 +102,8 @@ namespace config
                     }
                 }
             }
-        }
+        }*/
+}
 
 
         // 시뮬레이션 코드를 작성해야 합니다.
