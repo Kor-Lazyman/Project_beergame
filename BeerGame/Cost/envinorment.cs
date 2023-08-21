@@ -3,6 +3,7 @@ using SimSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 
 namespace envinorment
 {
@@ -47,7 +48,9 @@ namespace envinorment
 
             if (Variables.Ver_simulation)
             {
+                
                 Console.WriteLine($"[Inventory Cost of {Variables.I[item_id].NAME}]  {Inveventory_cost_over_time[^1]}");
+               
             }
         }
 
@@ -175,15 +178,14 @@ namespace envinorment
         public IEnumerable<Event> Process()
         {
             DateTime startday = new DateTime(1970, 1, 1, 0, 0, 0);
-            
-
-
-
             while (true)
             {
+                
                 TimeSpan elapsedTime = Env.Now - startday;
                 int day = (int)elapsedTime.TotalDays;
+                int hours = (int)elapsedTime.TotalHours;
                 bool shortageCheck = false;
+
                 foreach (var inven in Input_inventories)
                 {
                     int useCount = Variables.P[Process_id].INPUT_USE_COUNT[Input_inventories.IndexOf(inven)];
@@ -198,8 +200,8 @@ namespace envinorment
                     Process_stop_cost += Variables.P[Process_id].PRO_STOP_COST;
                     if (Variables.Ver_simulation)
                     {
-                        Console.WriteLine($"{Env.Now}: {Name}이(가) 원자재 또는 WIP 부족으로 작업을 중지합니다.");
-                        Console.WriteLine($"{Env.Now}: 작업 중지 비용: {Process_stop_cost}");
+                        Console.WriteLine($"Day:{day} Hours:{hours}: {Name}이(가) 원자재 또는 WIP 부족으로 작업을 중지합니다.");
+                        Console.WriteLine($"Day:{day} Hours:{hours}: 작업 중지 비용: {Process_stop_cost}");
                     }
                     yield return Env.Timeout(TimeSpan.FromHours(24));
                 }
@@ -215,7 +217,8 @@ namespace envinorment
 
                     if (Variables.Ver_simulation)
                     {
-                        Console.WriteLine($"{Env.Now}: {Process_id} 작업 시작");
+                        Console.WriteLine($"Day: {day} Hours:{hours}: {Process_id} 작업 시작");
+                        
                     }
                     
                     for (int i = 0; i < Input_inventories.Count; i++)
@@ -225,9 +228,10 @@ namespace envinorment
                         inven.Level -= use_count;
                         if (Variables.Ver_simulation)
                         {
-                            Console.WriteLine($"{Env.Now}: {Variables.I[inven.item_id].NAME}의 재고 수준: {inven.Level}");
+                            Console.WriteLine($"Day: {day} Hours:{hours}: {Variables.I[inven.item_id].NAME}의 재고 수준: {inven.Level}");
                             double holdingCost = inven.Level * Variables.I[inven.item_id].HOLD_COST;
-                            Console.WriteLine($"{Env.Now}: {Variables.I[inven.item_id].NAME}의 보유 비용: {Math.Round(holdingCost, 2)}");
+                            Console.WriteLine($"Day: {day} Hours:{hours}: {Variables.I[inven.item_id].NAME}의 보유 비용: {Math.Round(holdingCost, 2)}");
+                            
                         }
                         
                         etc.EventHoldingCost[day][inven.item_id]=((int)(inven.Level * Variables.I[inven.item_id].HOLD_COST));
@@ -239,16 +243,14 @@ namespace envinorment
 
                     if (Variables.Ver_simulation)
                     {
-                        Console.WriteLine($"{Env.Now}: {Variables.I[Output_inventory.item_id].TYPE} 1개를 생산했습니다.");
-                        Console.WriteLine($"{Env.Now}: {Variables.I[Output_inventory.item_id].TYPE}의 재고 수준: {Output_inventory.Level}");
+                        Console.WriteLine($"Day: {day} Hours:{hours}: {Variables.I[Output_inventory.item_id].TYPE} 1개를 생산했습니다.");
+                        Console.WriteLine($"Day: {day} Hours:{hours}: {Variables.I[Output_inventory.item_id].TYPE}의 재고 수준: {Output_inventory.Level}");
                         double outputHoldingCost = Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST;
-                        Console.WriteLine($"{Env.Now}: {Variables.I[Output_inventory.item_id].TYPE}의 보유 비용: {Math.Round(outputHoldingCost, 2)}");
+                        Console.WriteLine($"Day: {day} Hours:{hours}: {Variables.I[Output_inventory.item_id].TYPE}의 보유 비용: {Math.Round(outputHoldingCost, 2)}");
                     }
                     etc.EventHoldingCost[day][0] = (Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST);
                    
                     etc.EventHoldingCost[day][Variables.I.Count-1]=( Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST);
-
-
                 }
             }
         }
@@ -377,6 +379,7 @@ namespace envinorment
     }
     class Program
     {
+
         public static void Main(string[] args)
         {
 
@@ -385,7 +388,7 @@ namespace envinorment
 
 
             // 시뮬레이션 데이터 추출
-            Simulation simpy_env = simulationData.Item1;
+            Simulation simsharp_env = simulationData.Item1;
             List<Inventory> inventoryList = simulationData.Item2;
             List<Procurement> procurementList = simulationData.Item3;
             List<Production> productionList = simulationData.Item4;
@@ -396,17 +399,17 @@ namespace envinorment
             List<List<int>> EventHoldingCost = etc.EventHoldingCost;
 
             List<double> totalCostPerDay = new List<double>();
-
+            
             // 시뮬레이션 루프
             for (int day = 0; day < Variables.SIM_TIME; day++)
             {
                 // 환경의 하루 시뮬레이션 수행
-
+                Console.WriteLine($"\n===================Day {day} Start===================\n");
                 // 하루에 대한 비용 계산
                 Cal_cost(inventoryList, procurementList, productionList, sales, totalCostPerDay);
 
                 // 시뮬레이션 시간 전진
-                simpy_env.Run(until: simpy_env.Now + TimeSpan.FromDays(1));
+                simsharp_env.Run(until: simsharp_env.Now + TimeSpan.FromDays(1));
             }
         }
         static Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> Create_env()
@@ -465,10 +468,15 @@ namespace envinorment
 
         public static void Cal_cost(List<Inventory> inventoryList, List<Procurement> procurementList, List<Production> productionList, Sales sales, List<double> total_cost_per_day)
         {
+            
+            
+
             // Calculate the cost models
             foreach (var inven in inventoryList)
             {
+                
                 inven.cal_inventory_cost();
+                
             }
             foreach (var production in productionList)
             {
@@ -511,7 +519,9 @@ namespace envinorment
                 procurement.Daily_procurement_cost = 0;
             }
             sales.DailySellingCost = 0;
+
         }
+       
 
     }
     class etc
@@ -532,7 +542,6 @@ namespace envinorment
                 }
                 EventHoldingCost.Add(num);
             }
-            Console.WriteLine(EventHoldingCost[0]);
 
         }
     }
