@@ -1,4 +1,4 @@
-﻿using config;
+using config;
 using SimSharp;
 using System;
 using System.Collections.Generic;
