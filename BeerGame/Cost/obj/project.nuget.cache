@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "EBst1vZVXUL/sjTnAL7WGgaw2RuFuha9VkHVDivsDXuvQ6EE0LJwTA9s6YOJAhhNSMEmsVottNCRYOYvs2hxRQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\taekw\\Source\\Repos\\Kor-Lazyman\\Project_beergame\\BeerGame\\Cost\\Cost.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\taekw\\.nuget\\packages\\simsharp\\3.4.2\\simsharp.3.4.2.nupkg.sha512"
+  ],
+  "logs": []
+}
