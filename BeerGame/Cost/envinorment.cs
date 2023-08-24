@@ -1,8 +1,11 @@
 using config;
 using SimSharp;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace envinorment
@@ -87,7 +90,7 @@ namespace envinorment
             inventory.Level += order_size;
             if (Variables.Ver_simulation)
             {
-                Console.WriteLine($"{Env.Now}: {Name}has delivered {Variables.I[Item_id].NAME}units of{order_size}.");
+                Console.WriteLine($"{(Env.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {Name}has delivered {Variables.I[Item_id].NAME}units of{order_size}.");
             }
         }
     }
@@ -122,7 +125,7 @@ namespace envinorment
                 int order_size = Variables.I[Item_id].LOT_SIZE_ORDER;
                 if (Variables.Ver_simulation)
                 {
-                    Console.WriteLine($"{Env.Now}: Placed an order for{Variables.I[Item_id].NAME} units of{order_size}");
+                    Console.WriteLine($"{(Env.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: Placed an order for{Variables.I[Item_id].NAME} units of{order_size}");
                 }
                 Env.Process(provider.Deliver(order_size, inventory));
                 Cal_procurement_cost();
@@ -182,7 +185,7 @@ namespace envinorment
             {
 
                 TimeSpan elapsedTime = Env.Now - startday;
-                int day = (int)elapsedTime.TotalDays;
+                int day = (int)elapsedTime.TotalDays+1;
                 int hours = (int)elapsedTime.TotalHours;
                 bool shortageCheck = false;
 
@@ -210,11 +213,6 @@ namespace envinorment
                     int total_use_count = Variables.P[Process_id].INPUT_USE_COUNT.Sum();
 
                     double processing_time = 24.0 / Production_rate;
-                    yield return Env.Timeout(TimeSpan.FromHours(processing_time));
-
-
-
-
                     if (Variables.Ver_simulation)
                     {
                         Console.WriteLine($"Day: {day} Hours:{hours}: Process {Process_id} begins ");
@@ -234,7 +232,7 @@ namespace envinorment
 
                         }
 
-                        etc.EventHoldingCost[day][inven.item_id] = ((int)(inven.Level * Variables.I[inven.item_id].HOLD_COST));
+                        etc.EventHoldingCost[day-1][inven.item_id] = ((int)(inven.Level * Variables.I[inven.item_id].HOLD_COST));
 
                     }
 
@@ -248,10 +246,12 @@ namespace envinorment
                         double outputHoldingCost = Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST;
                         Console.WriteLine($"Day: {day} Hours:{hours}: Holding cost of {Variables.I[Output_inventory.item_id].TYPE}: {Math.Round(outputHoldingCost, 2)}");
                     }
-                    etc.EventHoldingCost[day][0] = (Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST);
+                    etc.EventHoldingCost[day-1][0] = (Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST);
 
-                    etc.EventHoldingCost[day][Variables.I.Count - 1] = (Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST);
+                    etc.EventHoldingCost[day-1][Variables.I.Count - 1] = (Output_inventory.Level * Variables.I[Output_inventory.item_id].HOLD_COST);
+                    yield return Env.Timeout(TimeSpan.FromHours(processing_time));
                 }
+               
             }
         }
 
@@ -272,7 +272,7 @@ namespace envinorment
 
     class Sales
     {
-        public Simulation Environment { get; set; }
+        public Simulation Envinorment { get; set; }
         public int ItemId { get; set; }
         public int DeliveryCost { get; set; }
         public int SetupCost { get; set; }
@@ -282,7 +282,7 @@ namespace envinorment
 
         public Sales(Simulation env, int item_id, int delivery_cost, int setup_cost)
         {
-            Environment = env;
+            Envinorment = env;
             ItemId = item_id;
             DeliveryCost = delivery_cost;
             SetupCost = setup_cost;
@@ -293,7 +293,7 @@ namespace envinorment
 
         public IEnumerable<Event> Delivery(int item_id, int order_size, Inventory product_inventory)
         {
-            yield return Environment.Timeout(TimeSpan.FromHours(Variables.I[item_id].DUE_DATE * 24));
+            yield return Envinorment.Timeout(TimeSpan.FromHours(Variables.I[item_id].DUE_DATE * 24));
 
             if (product_inventory.Level < order_size)
             {
@@ -302,7 +302,7 @@ namespace envinorment
                 {
                     if (Variables.Ver_simulation)
                     {
-                        Console.WriteLine($"{Environment.Now}: {product_inventory.Level} units of the product have been delivered to the customer");
+                        Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {product_inventory.Level} units of the product have been delivered to the customer");
                     }
 
                     product_inventory.Level -= order_size;
@@ -314,7 +314,7 @@ namespace envinorment
                 if (Variables.Ver_simulation)
                 {
                     Console.WriteLine($"[Cost of Loss] {LossCost}");
-                    Console.WriteLine($"Unable to deliver {Environment.Now}: {numShortages}units to the customer due to product shortage ");
+                    Console.WriteLine($"Unable to deliver {Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)}: {numShortages}units to the customer due to product shortage ");
                 }
             }
             else
@@ -322,7 +322,7 @@ namespace envinorment
                 product_inventory.Level -= order_size;
                 if (Variables.Ver_simulation)
                 {
-                    Console.WriteLine($"{Environment.Now}: {order_size} units of the product have been delivered to the customer");
+                    Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {order_size} units of the product have been delivered to the customer");
                 }
 
                 Cal_selling_cost();
@@ -347,14 +347,14 @@ namespace envinorment
 
     class Customer
     {
-        public Simulation Environment { get; set; }
+        public Simulation Envinorment { get; set; }
         public string Name { get; set; }
         public int ItemId { get; set; }
         public List<int> OrderHistory { get; set; }
 
         public Customer(Simulation env, string name, int item_id)
         {
-            Environment = env;
+            Envinorment = env;
             Name = name;
             ItemId = item_id;
             OrderHistory = new List<int>();
@@ -364,21 +364,25 @@ namespace envinorment
         {
             while (true)
             {
-                yield return Environment.Timeout(TimeSpan.FromHours(Variables.I[ItemId].CUST_ORDER_CYCLE * 24));
+                yield return Envinorment.Timeout(TimeSpan.FromHours(Variables.I[ItemId].CUST_ORDER_CYCLE * 24));
                 int order_size = Variables.I[ItemId].DEMAND_QUANTITY;
                 OrderHistory.Add(order_size);
 
                 if (Variables.Ver_simulation)
                 {
-                    Console.WriteLine($"{Environment.Now}: The customer has placed an order for {Variables.I[ItemId].NAME}  units of {order_size}");
+                    Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: The customer has placed an order for {Variables.I[ItemId].NAME}  units of {order_size}");
                 }
 
-                Environment.Process(sales.Delivery(ItemId, order_size, product_inventory));
+                Envinorment.Process(sales.Delivery(ItemId, order_size, product_inventory));
             }
         }
     }
     class Program
     {
+        //DataBase생성
+        public static List<List<List<int>>> Database_Materials = new List<List<List<int>>>();
+        public static List<double> Database_Cost=new List<double>(Variables.SIM_TIME);    
+        public static double total_cost = 0;
 
         public static void Main(string[] args)
         {
@@ -397,20 +401,39 @@ namespace envinorment
             // make_event_holding_cost 메서드 호출로 이벤트 보유 비용 데이터 초기화
             etc.make_event_holding_cost(Variables.SIM_TIME, Variables.I.Count);
             List<List<int>> EventHoldingCost = etc.EventHoldingCost;
-
+           
             List<double> totalCostPerDay = new List<double>();
 
             // 시뮬레이션 루프
+            
+            
             for (int day = 0; day < Variables.SIM_TIME; day++)
             {
-                // 환경의 하루 시뮬레이션 수행
-                Console.WriteLine($"\n===================Day {day} Start===================\n");
+                Console.WriteLine($"\n===================Day {day + 1} Start===================\n");
+
                 // 하루에 대한 비용 계산
                 Cal_cost(inventoryList, procurementList, productionList, sales, totalCostPerDay);
 
+                //DataBase 값 입력
+                List<List<int>> Id_Data = new List<List<int>>();
+                   
+                    for (int i = 0; i < inventoryList.Count; i++)
+                    {
+                        List<int> temp_data = new List<int>();
+                        temp_data.Add(inventoryList[i].item_id);
+                        temp_data.Add(inventoryList[i].Level);
+                        Id_Data.Add(temp_data);
+                    }
+                Database_Materials.Add(Id_Data);
+                Database_Cost.Add(total_cost);
+                
+                
+                simsharp_env.Run(TimeSpan.FromHours(24));
+   
+
+                // 환경의 하루 시뮬레이션 수행
                 // 시뮬레이션 시간 전진
-                simsharp_env.Run(until: simsharp_env.Now + TimeSpan.FromDays(1));
-            }
+            } 
         }
         static Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> Create_env()
         {
@@ -470,7 +493,7 @@ namespace envinorment
         {
 
 
-
+            total_cost = 0;
             // Calculate the cost models
             foreach (var inven in inventoryList)
             {
@@ -489,7 +512,7 @@ namespace envinorment
             sales.Cal_daily_selling_cost();
 
             // Calculate the total cost for the current day and append to the list
-            double total_cost = 0;
+            
             foreach (var inven in inventoryList)
             {
                 total_cost += inven.Inveventory_cost_over_time.Sum();
@@ -534,10 +557,9 @@ namespace envinorment
 
             for (int i = 0; i < time; i++)
             {
-                List<int> num = new List<int>(i);
+                List<int> num = new List<int>();
                 for (int j = 0; j < itemCount; j++)
                 {
-
                     num.Add(999999);
                 }
                 EventHoldingCost.Add(num);
