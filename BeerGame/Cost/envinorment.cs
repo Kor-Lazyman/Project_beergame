@@ -1,12 +1,9 @@
 using config;
 using SimSharp;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
+using Newtonsoft.Json;
+using static System.Net.Mime.MediaTypeNames;
+using System.Xml;
+using System.Text;
 
 namespace envinorment
 {
@@ -379,9 +376,7 @@ namespace envinorment
     }
     class Program
     {
-        //DataBase생성
-        public static List<List<List<int>>> Database_Materials = new List<List<List<int>>>();
-        public static List<double> Database_Cost=new List<double>(Variables.SIM_TIME);    
+        //DataBase생성 
         public static double total_cost = 0;
 
         public static void Main(string[] args)
@@ -405,8 +400,13 @@ namespace envinorment
             List<double> totalCostPerDay = new List<double>();
 
             // 시뮬레이션 루프
-            
-            
+
+
+            int[,] Database_Materials = new int[Variables.SIM_TIME, Variables.I.Count];
+            double[] Database_Cost = new double[Variables.SIM_TIME];
+
+            // 값을 할당하여 배열 채우기
+
             for (int day = 0; day < Variables.SIM_TIME; day++)
             {
                 Console.WriteLine($"\n===================Day {day + 1} Start===================\n");
@@ -415,25 +415,25 @@ namespace envinorment
                 Cal_cost(inventoryList, procurementList, productionList, sales, totalCostPerDay);
 
                 //DataBase 값 입력
-                List<List<int>> Id_Data = new List<List<int>>();
-                   
-                    for (int i = 0; i < inventoryList.Count; i++)
-                    {
-                        List<int> temp_data = new List<int>();
-                        temp_data.Add(inventoryList[i].item_id);
-                        temp_data.Add(inventoryList[i].Level);
-                        Id_Data.Add(temp_data);
-                    }
-                Database_Materials.Add(Id_Data);
-                Database_Cost.Add(total_cost);
-                
-                
+
+                for (int i = 0; i < inventoryList.Count; i++)
+                {
+
+                        Database_Materials[day, i] = inventoryList[i].Level;
+                }
+                Database_Cost[day]=(total_cost);
+
+
                 simsharp_env.Run(TimeSpan.FromHours(24));
-   
+
 
                 // 환경의 하루 시뮬레이션 수행
                 // 시뮬레이션 시간 전진
-            } 
+            }
+     
+            etc.SaveToJson("DatabaseMaterials.json", Database_Materials);
+            etc.SaveToJson("DatabaseCost.json", Database_Cost);
+
         }
         static Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> Create_env()
         {
@@ -565,6 +565,15 @@ namespace envinorment
                 EventHoldingCost.Add(num);
             }
 
+        }
+        public static void SaveToJson<T>(string filename, T data)
+        {
+            string jsonData = JsonConvert.SerializeObject(data);
+
+            // UTF-8로 인코딩하여 파일에 저장
+            File.WriteAllText(filename, jsonData, Encoding.UTF8);
+
+            Console.WriteLine($"Saved {filename} with UTF-8 encoding");
         }
     }
 
