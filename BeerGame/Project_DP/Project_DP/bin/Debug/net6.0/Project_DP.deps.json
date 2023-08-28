@@ -1,0 +1,41 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "Project_DP/1.0.0": {
+        "dependencies": {
+          "SimSharp": "3.4.2"
+        },
+        "runtime": {
+          "Project_DP.dll": {}
+        }
+      },
+      "SimSharp/3.4.2": {
+        "runtime": {
+          "lib/netstandard2.0/SimSharp.dll": {
+            "assemblyVersion": "3.4.2.0",
+            "fileVersion": "3.4.2.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Project_DP/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SimSharp/3.4.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dc+jSbpemv8rUrmTl2wb4tX8OtNob0CDI5j8n+AbZO8sWNXVC6cwFtiFFkaW9M3t6djCuFEr+LlClRlRKd1grw==",
+      "path": "simsharp/3.4.2",
+      "hashPath": "simsharp.3.4.2.nupkg.sha512"
+    }
+  }
+}
