@@ -1,6 +1,7 @@
-﻿using config;
+using config;
 using SimSharp;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Envinorment
 {
@@ -53,7 +54,7 @@ namespace Envinorment
             inventory.Level += order_size;
             if (config.Variables.Ver_simulation)
             {
-                Console.WriteLine($"{(Env.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {Name}has delivered {dictionary.I[Item_id].NAME}units of{order_size}.");
+                //Console.WriteLine($"{(Env.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {Name}has delivered {dictionary.I[Item_id].NAME}units of{order_size}.");
             }
         }
     }
@@ -88,7 +89,7 @@ namespace Envinorment
                 int order_size = dictionary.I[Item_id].LOT_SIZE_ORDER;
                 if (Variables.Ver_simulation)
                 {
-                    Console.WriteLine($"{(Env.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: Placed an order for{dictionary.I[Item_id].NAME} units of{order_size}");
+                    //Console.WriteLine($"{(Env.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: Placed an order for{dictionary.I[Item_id].NAME} units of{order_size}");
                 }
                 Env.Process(provider.Deliver(order_size, inventory));
             }
@@ -145,13 +146,13 @@ namespace Envinorment
                     }
                 }
 
-                if (shortageCheck)
+            if (shortageCheck)
                 {
                     Process_stop_cost += Variables.P[Process_id].PRO_STOP_COST;
                     if (Variables.Ver_simulation)
                     {
-                        Console.WriteLine($"Day:{day} Hours:{hours}: Stop {Name} due to a shortage of input materials or WIPs.");
-                        Console.WriteLine($"Day:{day} Hours:{hours}: Process stop cost :: {Process_stop_cost}");
+                        //Console.WriteLine($"Day:{day} Hours:{hours}: Stop {Name} due to a shortage of input materials or WIPs.");
+                        //Console.WriteLine($"Day:{day} Hours:{hours}: Process stop cost :: {Process_stop_cost}");
                     }
                     yield return Env.Timeout(TimeSpan.FromHours(24));
                 }
@@ -162,7 +163,7 @@ namespace Envinorment
                     double processing_time = 24.0 / Production_rate;
                     if (Variables.Ver_simulation)
                     {
-                        Console.WriteLine($"Day: {day} Hours:{hours}: Process {Process_id} begins ");
+                        //Console.WriteLine($"Day: {day} Hours:{hours}: Process {Process_id} begins ");
 
                     }
 
@@ -173,9 +174,9 @@ namespace Envinorment
                         inven.Level -= use_count;
                         if (Variables.Ver_simulation)
                         {
-                            Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[inven.item_id].NAME}: {inven.Level}");
+                            //Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[inven.item_id].NAME}: {inven.Level}");
                             double holdingCost = inven.Level * dictionary.I[inven.item_id].HOLD_COST;
-                            Console.WriteLine($"Day: {day} Hours:{hours}:Holding cost of {dictionary.I[inven.item_id].NAME}: {Math.Round(holdingCost, 2)}");
+                            //Console.WriteLine($"Day: {day} Hours:{hours}:Holding cost of {dictionary.I[inven.item_id].NAME}: {Math.Round(holdingCost, 2)}");
 
                         }
 
@@ -185,10 +186,10 @@ namespace Envinorment
 
                     if (Variables.Ver_simulation)
                     {
-                        Console.WriteLine($"Day: {day} Hours:{hours}:  A unit of {dictionary.I[Output_inventory.item_id].TYPE} has been produced");
-                        Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[Output_inventory.item_id].TYPE}: {Output_inventory.Level}");
+                        //Console.WriteLine($"Day: {day} Hours:{hours}:  A unit of {dictionary.I[Output_inventory.item_id].TYPE} has been produced");
+                        //Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[Output_inventory.item_id].TYPE}: {Output_inventory.Level}");
                         double outputHoldingCost = Output_inventory.Level * dictionary.I[Output_inventory.item_id].HOLD_COST;
-                        Console.WriteLine($"Day: {day} Hours:{hours}: Holding cost of {dictionary.I[Output_inventory.item_id].TYPE}: {Math.Round(outputHoldingCost, 2)}");
+                        //Console.WriteLine($"Day: {day} Hours:{hours}: Holding cost of {dictionary.I[Output_inventory.item_id].TYPE}: {Math.Round(outputHoldingCost, 2)}");
                     }
                     yield return Env.Timeout(TimeSpan.FromHours(processing_time));
                 }
@@ -228,7 +229,7 @@ namespace Envinorment
                 {
                     if (Variables.Ver_simulation)
                     {
-                        Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {product_inventory.Level} units of the product have been delivered to the customer");
+                        //Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {product_inventory.Level} units of the product have been delivered to the customer");
                     }
 
                     product_inventory.Level -= order_size;
@@ -238,8 +239,8 @@ namespace Envinorment
 
                 if (Variables.Ver_simulation)
                 {
-                    Console.WriteLine($"[Cost of Loss] {LossCost}");
-                    Console.WriteLine($"Unable to deliver {Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)}: {numShortages}units to the customer due to product shortage ");
+                    //Console.WriteLine($"[Cost of Loss] {LossCost}");
+                    //Console.WriteLine($"Unable to deliver {Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)}: {numShortages}units to the customer due to product shortage ");
                 }
             }
             else
@@ -247,7 +248,7 @@ namespace Envinorment
                 product_inventory.Level -= order_size;
                 if (Variables.Ver_simulation)
                 {
-                    Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {order_size} units of the product have been delivered to the customer");
+                    //Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {order_size} units of the product have been delivered to the customer");
                 }
 
             }
@@ -278,7 +279,7 @@ namespace Envinorment
 
                 if (Variables.Ver_simulation)
                 {
-                    Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: The customer has placed an order for {dictionary.I[ItemId].NAME}  units of {order_size}");
+                    //Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: The customer has placed an order for {dictionary.I[ItemId].NAME}  units of {order_size}");
                 }
 
                 Envinorment.Process(sales.Delivery(ItemId, order_size, product_inventory));
@@ -289,20 +290,21 @@ namespace Envinorment
     {
         //DataBase생성 
         public static double total_cost = 0;
-
+        public static int[] indexes =new int[Variables.SIM_TIME];
         public static void Main(string[] args)
         {
 
-           
-
-
-            // 시뮬레이션 루프
+            double[,,,] policy = new double[Variables.SIM_TIME,1,1,3];
+            double gamma = 0.01;
+            double value = 0;
+          // 시뮬레이션 루프
 
             // 값을 할당하여 배열 채우기
             for (int Episodes = 0; Episodes < 10000; Episodes++)
             {
-                // Create_env 메서드를 호출하여 시뮬레이션 구성 요소 초기화
-                Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> simulationData = Create_env();
+                int max_index=0;
+        // Create_env 메서드를 호출하여 시뮬레이션 구성 요소 초기화
+        Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> simulationData = Create_env();
 
 
                 // 시뮬레이션 데이터 추출
@@ -310,45 +312,73 @@ namespace Envinorment
                 List<Inventory> inventoryList = simulationData.Item2;
                 List<Procurement> procurementList = simulationData.Item3;
                 List<Production> productionList = simulationData.Item4;
-                List<List<List<int>>> Samples = new List<List<List<int>>>();
+
                 Sales sales = simulationData.Item5;
-                List<List<int>> Total_cost = new List<List<int>>();
+
                 int cost = 0;
                 dictionary.Make_Init();
                 List<List<int>> episode_data = new List<List<int>>();
-                List<int> temp =new List<int>();
+
+                List<List<int>> tmp2 = new List<List<int>>();
+                if (Episodes % 1000 == 0)
+                {
+                    Console.WriteLine(Episodes);
+                    Thread.Sleep(1000);
+                }
+                int basic_action = Variables.I[1].LOT_SIZE_ORDER;
                 for (int day = 0; day < Variables.SIM_TIME; day++)
                 {
-
-                    Console.WriteLine($"\n===================Day {day + 1} Start===================\n");
-                    simsharp_env.Run(TimeSpan.FromHours(24));
-                    if (Episodes < 2000)
+                    
+                    int previous_Product = inventoryList[0].Level;
+                    int previous_Raw = inventoryList[1].Level;
+                    for (int action = 0; action < 3; action++)
                     {
-                        Random random = new Random();
-                        int randomNumber = random.Next(0, 3);
-                        dictionary.I[1].LOT_SIZE_ORDER = randomNumber;
-                        Console.WriteLine(Episodes);
-
-                        List<int> day_data = new List<int>();
-                        day_data.Add(inventoryList[0].Level);
-                        day_data.Add(inventoryList[1].Level);
-                        day_data.Add(dictionary.I[1].LOT_SIZE_ORDER);
-                        cost = inventoryList[1].Level * 3 + inventoryList[0].Level + cost;
-                      
-                        temp.Add(cost);
-                       
-                        for (int now_day = 0; now_day < day; now_day++)
-                        {
-                            temp[now_day] += cost;
-                        }
-                        episode_data.Add(day_data);
+                        //Console.WriteLine($"\n===================Day {day + 1} Start===================\n");
+                        Simulation test_env = simsharp_env;
+                        Dictionary<int, Item> test_I = dictionary.I;
+                        dictionary.I[1].LOT_SIZE_ORDER = action;
+                        test_env.Run(TimeSpan.FromDays(1));
+                        value+=policy[day, previous_Product, previous_Raw, action]*(-(previous_Product+ previous_Raw)) + Math.Pow(gamma, day) * (inventoryList[0].Level + inventoryList[1].Level);
+                        inventoryList[0].Level = previous_Product;
+                        inventoryList[1].Level = previous_Raw;
+                        dictionary.I = test_I;
                     }
+
+                    for(int action = 0;action < 3; action++)
+                    {
+                        Simulation test_env = simsharp_env;
+                        Dictionary<int, Item> test_I = dictionary.I;
+                        dictionary.I[1].LOT_SIZE_ORDER = action;
+                        test_env.Run(TimeSpan.FromDays(1));
+                        double reward = -(previous_Product+ previous_Raw);
+                        double next_value = inventoryList[0].Level + inventoryList[1].Level;
+                        double temp = reward + Math.Pow(gamma, day) * next_value;
+                        inventoryList[0].Level = previous_Product;
+                        inventoryList[1].Level = previous_Raw;
+                        dictionary.I = test_I;
+                        if (temp == value)
+                        {
+                            max_index=action;
+                            indexes[day]=max_index;
+                        }
+                        else if(temp>value)
+                        {
+                            value= temp;
+                            max_index=action;
+                            indexes[day] = max_index;
+                        }
+                    }
+                    policy[day, previous_Product, previous_Raw, max_index] += value;
+
                 }
-                Total_cost.Add(temp);
-                Samples.Add(episode_data);
-
-
             }
+            for(int day = 0; day < Variables.SIM_TIME; day++)
+            {
+                Console.WriteLine(indexes[day]);
+            }
+            
+           
+        }
             static Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> Create_env()
             {
 
@@ -402,6 +432,6 @@ namespace Envinorment
                 return new Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>>(
                     SimShrp_env, inventoryList, procurementList, productionList, sales, customer, providerList);
             }
-        }
+        
     }
 }
