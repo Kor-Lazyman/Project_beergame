@@ -1,7 +1,11 @@
 using config;
 using SimSharp;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection.Emit;
 
 namespace Envinorment
 {
@@ -102,8 +106,8 @@ namespace Envinorment
         public int Process_id { get; set; }
         public int Production_rate { get; set; }
         public Item Output { get; set; }
-        public List<Inventory> Input_inventories { get; set; }
-        public Inventory Output_inventory { get; set; }
+        public static List<Inventory> Input_inventories { get; set; }
+        public static Inventory Output_inventory { get; set; }
         public int Processing_cost { get; set; }
         public List<int> Processing_cost_over_time { get; set; }
         public int Daily_production_cost { get; set; }
@@ -126,6 +130,7 @@ namespace Envinorment
 
         }
 
+
         public IEnumerable<Event> Process()
         {
             DateTime startday = new DateTime(1970, 1, 1, 0, 0, 0);
@@ -146,7 +151,7 @@ namespace Envinorment
                     }
                 }
 
-            if (shortageCheck)
+                if (shortageCheck)
                 {
                     Process_stop_cost += Variables.P[Process_id].PRO_STOP_COST;
                     if (Variables.Ver_simulation)
@@ -156,9 +161,11 @@ namespace Envinorment
                     }
                     yield return Env.Timeout(TimeSpan.FromHours(24));
                 }
+                
                 else
                 {
-                    int total_use_count = Variables.P[Process_id].INPUT_USE_COUNT.Sum();
+                    
+                        int total_use_count = Variables.P[Process_id].INPUT_USE_COUNT.Sum();
 
                     double processing_time = 24.0 / Production_rate;
                     if (Variables.Ver_simulation)
@@ -170,13 +177,18 @@ namespace Envinorment
                     for (int i = 0; i < Input_inventories.Count; i++)
                     {
                         Inventory inven = Input_inventories[i];
+                        if (inven.Level > 20)
+                        {
+                            inven.Level = 20;
+
+                        }
                         int use_count = Variables.P[Process_id].INPUT_USE_COUNT[i];
                         inven.Level -= use_count;
                         if (Variables.Ver_simulation)
                         {
-                            //Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[inven.item_id].NAME}: {inven.Level}");
+                           // Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[inven.item_id].NAME}: {inven.Level}");
                             double holdingCost = inven.Level * dictionary.I[inven.item_id].HOLD_COST;
-                            //Console.WriteLine($"Day: {day} Hours:{hours}:Holding cost of {dictionary.I[inven.item_id].NAME}: {Math.Round(holdingCost, 2)}");
+                           // Console.WriteLine($"Day: {day} Hours:{hours}:Holding cost of {dictionary.I[inven.item_id].NAME}: {Math.Round(holdingCost, 2)}");
 
                         }
 
@@ -186,11 +198,17 @@ namespace Envinorment
 
                     if (Variables.Ver_simulation)
                     {
-                        //Console.WriteLine($"Day: {day} Hours:{hours}:  A unit of {dictionary.I[Output_inventory.item_id].TYPE} has been produced");
-                        //Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[Output_inventory.item_id].TYPE}: {Output_inventory.Level}");
+                        if (Output_inventory.Level >20)
+                        {
+                            Output_inventory.Level = 20;
+                        }
+
+                       // Console.WriteLine($"Day: {day} Hours:{hours}:  A unit of {dictionary.I[Output_inventory.item_id].TYPE} has been produced");
+                       // Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[Output_inventory.item_id].TYPE}: {Output_inventory.Level}");
                         double outputHoldingCost = Output_inventory.Level * dictionary.I[Output_inventory.item_id].HOLD_COST;
-                        //Console.WriteLine($"Day: {day} Hours:{hours}: Holding cost of {dictionary.I[Output_inventory.item_id].TYPE}: {Math.Round(outputHoldingCost, 2)}");
+                       // Console.WriteLine($"Day: {day} Hours:{hours}: Holding cost of {dictionary.I[Output_inventory.item_id].TYPE}: {Math.Round(outputHoldingCost, 2)}");
                     }
+                    
                     yield return Env.Timeout(TimeSpan.FromHours(processing_time));
                 }
 
@@ -207,8 +225,10 @@ namespace Envinorment
         public int DailySellingCost { get; set; }
         public int LossCost { get; set; }
 
+        public static int numShortages = 0;
         public Sales(Simulation env, int item_id, int delivery_cost, int setup_cost)
         {
+
             Envinorment = env;
             ItemId = item_id;
             DeliveryCost = delivery_cost;
@@ -229,7 +249,7 @@ namespace Envinorment
                 {
                     if (Variables.Ver_simulation)
                     {
-                        //Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {product_inventory.Level} units of the product have been delivered to the customer");
+                       // Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {product_inventory.Level} units of the product have been delivered to the customer");
                     }
 
                     product_inventory.Level -= order_size;
@@ -239,8 +259,8 @@ namespace Envinorment
 
                 if (Variables.Ver_simulation)
                 {
-                    //Console.WriteLine($"[Cost of Loss] {LossCost}");
-                    //Console.WriteLine($"Unable to deliver {Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)}: {numShortages}units to the customer due to product shortage ");
+                   // Console.WriteLine($"[Cost of Loss] {LossCost}");
+                   // Console.WriteLine($"Unable to deliver {Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)}: {numShortages}units to the customer due to product shortage ");
                 }
             }
             else
@@ -248,7 +268,7 @@ namespace Envinorment
                 product_inventory.Level -= order_size;
                 if (Variables.Ver_simulation)
                 {
-                    //Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {order_size} units of the product have been delivered to the customer");
+                  // Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {order_size} units of the product have been delivered to the customer");
                 }
 
             }
@@ -279,32 +299,65 @@ namespace Envinorment
 
                 if (Variables.Ver_simulation)
                 {
-                    //Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: The customer has placed an order for {dictionary.I[ItemId].NAME}  units of {order_size}");
+                  // Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: The customer has placed an order for {dictionary.I[ItemId].NAME}  units of {order_size}");
                 }
 
                 Envinorment.Process(sales.Delivery(ItemId, order_size, product_inventory));
             }
         }
     }
+    class SimulationCopyHelper
+    {
+        public static Simulation CopySimulation(Simulation original)
+        {
+            Simulation copy = new Simulation();
+
+
+            return copy;
+        }
+    }
+    class Make_copy
+    {
+        public static List<Inventory> make_copy(List<Inventory> inventoryList)
+        {
+            List<Inventory> copy = new List<Inventory>(inventoryList);
+            return copy;
+        }
+    }
     class Program
     {
         //DataBase생성 
         public static double total_cost = 0;
-        public static int[] indexes =new int[Variables.SIM_TIME];
+        public static int[] indexes = new int[Variables.SIM_TIME];
         public static void Main(string[] args)
         {
 
-            double[,,,] policy = new double[Variables.SIM_TIME,1,1,3];
+            double[,,,] policy = new double[Variables.SIM_TIME, 21, 21, 3];
+
+            for (int t = 0; t < Variables.SIM_TIME; t++)
+            {
+                for (int i = 0; i < 1; i++)
+                {
+                    for (int j = 0; j < 1; j++)
+                    {
+                        for (int k = 0; k < 3; k++)
+                        {
+                            policy[t, i, j, k] = 0.0;
+                        }
+                    }
+                }
+            }
+
             double gamma = 0.01;
             double value = 0;
-          // 시뮬레이션 루프
+            // 시뮬레이션 루프
 
             // 값을 할당하여 배열 채우기
             for (int Episodes = 0; Episodes < 10000; Episodes++)
             {
-                int max_index=0;
-        // Create_env 메서드를 호출하여 시뮬레이션 구성 요소 초기화
-        Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> simulationData = Create_env();
+                int max_index = 0;
+                // Create_env 메서드를 호출하여 시뮬레이션 구성 요소 초기화
+                Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> simulationData = Create_env();
 
 
                 // 시뮬레이션 데이터 추출
@@ -328,110 +381,122 @@ namespace Envinorment
                 int basic_action = Variables.I[1].LOT_SIZE_ORDER;
                 for (int day = 0; day < Variables.SIM_TIME; day++)
                 {
-                    
-                    int previous_Product = inventoryList[0].Level;
-                    int previous_Raw = inventoryList[1].Level;
+                    //Console.WriteLine($"\n===================Day {day + 1} Start===================\n");
+                    simsharp_env.Run(TimeSpan.FromDays(1));
+                    int previous_Product = Production.Output_inventory.Level;
+                    int previous_Raw = Production.Input_inventories[0].Level;
                     for (int action = 0; action < 3; action++)
                     {
-                        //Console.WriteLine($"\n===================Day {day + 1} Start===================\n");
-                        Simulation test_env = simsharp_env;
+                        
+                        List<Inventory> copy = Make_copy.make_copy(Production.Input_inventories);
+                        int temp = Production.Output_inventory.Level;
                         Dictionary<int, Item> test_I = dictionary.I;
                         dictionary.I[1].LOT_SIZE_ORDER = action;
-                        test_env.Run(TimeSpan.FromDays(1));
-                        value+=policy[day, previous_Product, previous_Raw, action]*(-(previous_Product+ previous_Raw)) + Math.Pow(gamma, day) * (inventoryList[0].Level + inventoryList[1].Level);
-                        inventoryList[0].Level = previous_Product;
-                        inventoryList[1].Level = previous_Raw;
+                        policy[day, previous_Product, previous_Raw, action] += policy[day, previous_Product, previous_Raw, action] - Math.Pow(gamma, day) * (Production.Input_inventories[0].Level + Production.Output_inventory.Level + Sales.numShortages*5);
+                        int record1 = copy[0].Level;
+ 
+                        simsharp_env.Run(TimeSpan.FromHours(24));
+                        Production.Input_inventories[0].Level = copy[0].Level;
+                        Production.Output_inventory.Level = temp;
+        
+
                         dictionary.I = test_I;
+                     
                     }
 
-                    for(int action = 0;action < 3; action++)
+                    for (int action = 0; action < 3; action++)
                     {
-                        Simulation test_env = simsharp_env;
-                        Dictionary<int, Item> test_I = dictionary.I;
+                        Sales.numShortages = 0;
                         dictionary.I[1].LOT_SIZE_ORDER = action;
-                        test_env.Run(TimeSpan.FromDays(1));
-                        double reward = -(previous_Product+ previous_Raw);
-                        double next_value = inventoryList[0].Level + inventoryList[1].Level;
+                        int tmp = Production.Output_inventory.Level;
+                        List<Inventory> copy = Make_copy.make_copy(inventoryList);
+                        int record1 = copy[0].Level;
+                        simsharp_env.Run(TimeSpan.FromHours(24));
+                        double reward = policy[day,previous_Product, previous_Raw,action];
+                        double next_value = -(Production.Input_inventories[0].Level + Production.Output_inventory.Level + Sales.numShortages*5);
                         double temp = reward + Math.Pow(gamma, day) * next_value;
-                        inventoryList[0].Level = previous_Product;
-                        inventoryList[1].Level = previous_Raw;
-                        dictionary.I = test_I;
                         if (temp == value)
                         {
-                            max_index=action;
-                            indexes[day]=max_index;
-                        }
-                        else if(temp>value)
-                        {
-                            value= temp;
-                            max_index=action;
+                            max_index = action;
                             indexes[day] = max_index;
                         }
-                    }
-                    policy[day, previous_Product, previous_Raw, max_index] += value;
+                        else if (temp > value)
+                        {
+                            value = temp;
+                            max_index = action;
+                            indexes[day] = max_index;
 
+                        }
+                        Production.Output_inventory.Level = tmp;
+                        Production.Input_inventories[0].Level = record1;
+                    }
+                    
+                    policy[day, previous_Product, previous_Raw, max_index] += value;
+                    dictionary.I[1].LOT_SIZE_ORDER = max_index;
                 }
+               
             }
-            for(int day = 0; day < Variables.SIM_TIME; day++)
+            for (int day = 0; day < Variables.SIM_TIME; day++)
             {
+                Console.WriteLine($"============{day}============");
                 Console.WriteLine(indexes[day]);
             }
-            
-           
+
+
         }
-            static Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> Create_env()
+        static Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> Create_env()
+        {
+
+            var SimShrp_env = new SimSharp.Simulation();
+            List<Inventory> inventoryList = new List<Inventory>();
+            foreach (int i in dictionary.I.Keys)
             {
-
-                var SimShrp_env = new SimSharp.Simulation();
-                List<Inventory> inventoryList = new List<Inventory>();
-                foreach (int i in dictionary.I.Keys)
-                {
-                    inventoryList.Add(new Inventory(i, dictionary.I[i].HOLD_COST, dictionary.I[i].SHORTAGE_COST, dictionary.I[i].INIT_LEVEL));
-                }
-
-                Customer customer = new Customer(SimShrp_env, "CUSTOMER", dictionary.I[0].ID);
-
-                List<Provider> providerList = new List<Provider>();
-                List<Procurement> procurementList = new List<Procurement>();
-                foreach (int i in dictionary.I.Keys)
-                {
-                    if (dictionary.I[i].TYPE == "Raw Material")
-                    {
-                        providerList.Add(new Provider(SimShrp_env, "PROVIDER_" + i.ToString(), i));
-                        procurementList.Add(new Procurement(SimShrp_env, dictionary.I[i].ID, dictionary.I[i].PURCHASE_COST, dictionary.I[i].SETUP_COST_RAW));
-                    }
-                }
-
-                Sales sales = new Sales(SimShrp_env, customer.ItemId, dictionary.I[0].DELIVERY_COST, dictionary.I[0].SETUP_COST_RAW);
-
-                List<Production> productionList = new List<Production>();
-                foreach (int i in Variables.P.Keys)
-                {
-                    Inventory outputInventory = inventoryList[Variables.P[i].OUTPUT.ID];
-                    List<Inventory> inputInventories = new List<Inventory>();
-                    foreach (var j in Variables.P[i].INPUT_LIST)
-                    {
-
-                        inputInventories.Add(inventoryList[j.ID]);
-                    }
-                    Item Result_item_id = Variables.P[i].OUTPUT;
-                    productionList.Add(new Production(SimShrp_env, "PROCESS_" + i.ToString(), Variables.P[i].ID,
-                                                       Variables.P[i].PRODUCTION_RATE, Result_item_id, inputInventories, outputInventory, Variables.P[i].PROCESS_COST));
-                }
-
-                SimShrp_env.Process(customer.Order(sales, inventoryList[dictionary.I[0].ID]));
-                foreach (var production in productionList)
-                {
-                    SimShrp_env.Process(production.Process());
-                }
-                for (int i = 0; i < providerList.Count; i++)
-                {
-                    SimShrp_env.Process(procurementList[i].Order(providerList[i], inventoryList[providerList[i].Item_id]));
-                }
-
-                return new Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>>(
-                    SimShrp_env, inventoryList, procurementList, productionList, sales, customer, providerList);
+                inventoryList.Add(new Inventory(i, dictionary.I[i].HOLD_COST, dictionary.I[i].SHORTAGE_COST, dictionary.I[i].INIT_LEVEL));
             }
-        
+
+            Customer customer = new Customer(SimShrp_env, "CUSTOMER", dictionary.I[0].ID);
+
+            List<Provider> providerList = new List<Provider>();
+            List<Procurement> procurementList = new List<Procurement>();
+            foreach (int i in dictionary.I.Keys)
+            {
+                if (dictionary.I[i].TYPE == "Raw Material")
+                {
+                    providerList.Add(new Provider(SimShrp_env, "PROVIDER_" + i.ToString(), i));
+                    procurementList.Add(new Procurement(SimShrp_env, dictionary.I[i].ID, dictionary.I[i].PURCHASE_COST, dictionary.I[i].SETUP_COST_RAW));
+                }
+            }
+
+            Sales sales = new Sales(SimShrp_env, customer.ItemId, dictionary.I[0].DELIVERY_COST, dictionary.I[0].SETUP_COST_RAW);
+
+            List<Production> productionList = new List<Production>();
+            foreach (int i in Variables.P.Keys)
+            {
+                Inventory outputInventory = inventoryList[Variables.P[i].OUTPUT.ID];
+                List<Inventory> inputInventories = new List<Inventory>();
+                foreach (var j in Variables.P[i].INPUT_LIST)
+                {
+
+                    inputInventories.Add(inventoryList[j.ID]);
+                }
+                Item Result_item_id = Variables.P[i].OUTPUT;
+                productionList.Add(new Production(SimShrp_env, "PROCESS_" + i.ToString(), Variables.P[i].ID,
+                                                   Variables.P[i].PRODUCTION_RATE, Result_item_id, inputInventories, outputInventory, Variables.P[i].PROCESS_COST));
+            }
+
+            SimShrp_env.Process(customer.Order(sales, inventoryList[dictionary.I[0].ID]));
+            foreach (var production in productionList)
+            {
+                SimShrp_env.Process(production.Process());
+            }
+            for (int i = 0; i < providerList.Count; i++)
+            {
+                SimShrp_env.Process(procurementList[i].Order(providerList[i], inventoryList[providerList[i].Item_id]));
+            }
+
+            return new Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>>(
+                SimShrp_env, inventoryList, procurementList, productionList, sales, customer, providerList);
+        }
+
     }
 }
