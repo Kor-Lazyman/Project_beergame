@@ -307,24 +307,8 @@ namespace Envinorment
             }
         }
     }
-    class SimulationCopyHelper
-    {
-        public static Simulation CopySimulation(Simulation original)
-        {
-            Simulation copy = new Simulation();
 
 
-            return copy;
-        }
-    }
-    class Make_copy
-    {
-        public static List<Inventory> make_copy(List<Inventory> inventoryList)
-        {
-            List<Inventory> copy = new List<Inventory>(inventoryList);
-            return copy;
-        }
-    }
     class Program
     {
         //DataBase생성 
