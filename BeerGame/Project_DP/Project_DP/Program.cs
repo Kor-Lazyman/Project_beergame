@@ -161,16 +161,16 @@ namespace Envinorment
                     }
                     yield return Env.Timeout(TimeSpan.FromHours(24));
                 }
-                
+
                 else
                 {
-                    
-                        int total_use_count = Variables.P[Process_id].INPUT_USE_COUNT.Sum();
+
+                    int total_use_count = Variables.P[Process_id].INPUT_USE_COUNT.Sum();
 
                     double processing_time = 24.0 / Production_rate;
                     if (Variables.Ver_simulation)
                     {
-                       // Console.WriteLine($"Day: {day} Hours:{hours}: Process {Process_id} begins ");
+                        // Console.WriteLine($"Day: {day} Hours:{hours}: Process {Process_id} begins ");
 
                     }
 
@@ -186,9 +186,9 @@ namespace Envinorment
                         inven.Level -= use_count;
                         if (Variables.Ver_simulation)
                         {
-                           // Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[inven.item_id].NAME}: {inven.Level}");
+                            // Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[inven.item_id].NAME}: {inven.Level}");
                             double holdingCost = inven.Level * dictionary.I[inven.item_id].HOLD_COST;
-                           // Console.WriteLine($"Day: {day} Hours:{hours}:Holding cost of {dictionary.I[inven.item_id].NAME}: {Math.Round(holdingCost, 2)}");
+                            // Console.WriteLine($"Day: {day} Hours:{hours}:Holding cost of {dictionary.I[inven.item_id].NAME}: {Math.Round(holdingCost, 2)}");
 
                         }
 
@@ -198,17 +198,17 @@ namespace Envinorment
 
                     if (Variables.Ver_simulation)
                     {
-                        if (Output_inventory.Level >20)
+                        if (Output_inventory.Level > 20)
                         {
                             Output_inventory.Level = 20;
                         }
 
-                       //Console.WriteLine($"Day: {day} Hours:{hours}:  A unit of {dictionary.I[Output_inventory.item_id].TYPE} has been produced");
-                       // Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[Output_inventory.item_id].TYPE}: {Output_inventory.Level}");
+                        //Console.WriteLine($"Day: {day} Hours:{hours}:  A unit of {dictionary.I[Output_inventory.item_id].TYPE} has been produced");
+                        // Console.WriteLine($"Day: {day} Hours:{hours}:  Inventory level of {dictionary.I[Output_inventory.item_id].TYPE}: {Output_inventory.Level}");
                         double outputHoldingCost = Output_inventory.Level * dictionary.I[Output_inventory.item_id].HOLD_COST;
-                       // Console.WriteLine($"Day: {day} Hours:{hours}: Holding cost of {dictionary.I[Output_inventory.item_id].TYPE}: {Math.Round(outputHoldingCost, 2)}");
+                        // Console.WriteLine($"Day: {day} Hours:{hours}: Holding cost of {dictionary.I[Output_inventory.item_id].TYPE}: {Math.Round(outputHoldingCost, 2)}");
                     }
-                    
+
                     yield return Env.Timeout(TimeSpan.FromHours(processing_time));
                 }
 
@@ -245,12 +245,12 @@ namespace Envinorment
             if (product_inventory.Level < order_size)
             {
                 int numShortages = Math.Abs(product_inventory.Level - order_size);
-                
+
                 if (product_inventory.Level > 0)
                 {
                     if (Variables.Ver_simulation)
                     {
-                       // Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {product_inventory.Level} units of the product have been delivered to the customer");
+                        // Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {product_inventory.Level} units of the product have been delivered to the customer");
                     }
 
                     product_inventory.Level -= order_size;
@@ -260,8 +260,8 @@ namespace Envinorment
 
                 if (Variables.Ver_simulation)
                 {
-                   // Console.WriteLine($"[Cost of Loss] {LossCost}");
-                   // Console.WriteLine($"Unable to deliver {Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)}: {numShortages}units to the customer due to product shortage ");
+                    // Console.WriteLine($"[Cost of Loss] {LossCost}");
+                    // Console.WriteLine($"Unable to deliver {Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)}: {numShortages}units to the customer due to product shortage ");
                 }
             }
             else
@@ -269,7 +269,7 @@ namespace Envinorment
                 product_inventory.Level -= order_size;
                 if (Variables.Ver_simulation)
                 {
-                  // Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {order_size} units of the product have been delivered to the customer");
+                    // Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: {order_size} units of the product have been delivered to the customer");
                 }
 
             }
@@ -300,7 +300,7 @@ namespace Envinorment
 
                 if (Variables.Ver_simulation)
                 {
-                  // Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: The customer has placed an order for {dictionary.I[ItemId].NAME}  units of {order_size}");
+                    // Console.WriteLine($"{(Envinorment.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalDays}: The customer has placed an order for {dictionary.I[ItemId].NAME}  units of {order_size}");
                 }
 
                 Envinorment.Process(sales.Delivery(ItemId, order_size, product_inventory));
@@ -340,7 +340,7 @@ namespace Envinorment
             // 값을 할당하여 배열 채우기
             for (int Episodes = 0; Episodes < 10000; Episodes++)
             {
-                
+
                 int max_index = 0;
                 // Create_env 메서드를 호출하여 시뮬레이션 구성 요소 초기화
                 Tuple<SimSharp.Simulation, List<Inventory>, List<Procurement>, List<Production>, Sales, Customer, List<Provider>> simulationData = Create_env();
@@ -366,28 +366,25 @@ namespace Envinorment
                 int basic_action = Variables.I[1].LOT_SIZE_ORDER;
                 for (int day = 0; day < Variables.SIM_TIME; day++)
                 {
-                    
+
                     simsharp_env.Run(TimeSpan.FromDays(1));
                     int previous_Product = Production.Output_inventory.Level;
                     int previous_Raw = Production.Input_inventories[0].Level;
                     //Console.WriteLine($"\n===================Day {day + 1} Start===================\n");
-                   
+
 
                     for (int action = 0; action < 3; action++)
                     {
-                       dictionary.I[1].LOT_SIZE_ORDER=action;
-                        int shortage = Variables.I[0].DEMAND_QUANTITY - action-Variables.I[1].INIT_LEVEL;
-                        Variables.I[1].INIT_LEVEL-= Variables.I[0].DEMAND_QUANTITY;
-                        if(Variables.I[1].INIT_LEVEL<0){
-                            Variables.I[1].INIT_LEVEL=0;
-                        }
+                        dictionary.I[1].LOT_SIZE_ORDER = action;
+                        int shortage = Variables.I[0].DEMAND_QUANTITY - action;
+
                         if (shortage < 0)
                         {
                             shortage = 0;
                         }
-                        policy[day, previous_Product, previous_Raw, action] += policy[day, previous_Product, previous_Raw, action] - Math.Pow(gamma, day) * ((previous_Raw+action) + (previous_Product + action)*3 + shortage * 5);
-                       
-            
+                        policy[day, previous_Product, previous_Raw, action] += policy[day, previous_Product, previous_Raw, action] - Math.Pow(gamma, day) * ((previous_Raw + action) + (previous_Product + action) * 3 + shortage * 5);
+
+
                         Production.Input_inventories[0].Level = previous_Product;
                         Production.Output_inventory.Level = previous_Raw;
 
@@ -397,15 +394,15 @@ namespace Envinorment
 
                     for (int action = 0; action < 3; action++)
                     {
-                        
+
                         dictionary.I[1].LOT_SIZE_ORDER = action;
                         int shortage = Variables.I[0].DEMAND_QUANTITY - action;
                         if (shortage < 0)
                         {
                             shortage = 0;
                         }
-                        double reward = previous_Raw+ previous_Product*3;
-                        double next_value = policy[day, previous_Product, previous_Raw, action] - ((previous_Raw + action) + (previous_Product + action) * 3 + shortage*5);
+                        double reward = previous_Raw + previous_Product * 3;
+                        double next_value = policy[day, previous_Product, previous_Raw, action] - ((previous_Raw + action) + (previous_Product + action) * 3 + shortage * 5);
                         double temp = reward + Math.Pow(gamma, day) * next_value;
                         if (temp == previous)
                         {
@@ -413,7 +410,7 @@ namespace Envinorment
                             indexes[day] = max_index;
                             previous = temp;
                         }
-                        else if ((temp) >previous)
+                        else if ((temp) > previous)
                         {
                             policy[day, previous_Product, previous_Raw, action] = temp;
                             max_index = action;
@@ -421,26 +418,26 @@ namespace Envinorment
                             previous = temp;
 
                         }
-                        
- 
-                        
+
+
+
                     }
-              
+
                     Production.Output_inventory.Level = previous_Product;
                     Production.Input_inventories[0].Level = previous_Raw;
 
                     policy[day, previous_Product, previous_Raw, max_index] += value;
                     dictionary.I[1].LOT_SIZE_ORDER = max_index;
-                    
+
                 }
 
-               
+
             }
             for (int day = 0; day < Variables.SIM_TIME; day++)
             {
                 Console.WriteLine($"============{day}============");
                 Console.WriteLine(indexes[day]);
-               
+
             }
 
 
