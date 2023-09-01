@@ -376,7 +376,11 @@ namespace Envinorment
                     for (int action = 0; action < 3; action++)
                     {
                        dictionary.I[1].LOT_SIZE_ORDER=action;
-                        int shortage = Variables.I[0].DEMAND_QUANTITY - action;
+                        int shortage = Variables.I[0].DEMAND_QUANTITY - action-Variables.I[1].INIT_LEVEL;
+                        Variables.I[1].INIT_LEVEL-= Variables.I[0].DEMAND_QUANTITY;
+                        if(Variables.I[1].INIT_LEVEL<0){
+                            Variables.I[1].INIT_LEVEL=0;
+                        }
                         if (shortage < 0)
                         {
                             shortage = 0;
