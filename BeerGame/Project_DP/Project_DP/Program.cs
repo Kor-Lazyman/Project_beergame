@@ -317,15 +317,15 @@ namespace Envinorment
         public static void Main(string[] args)
         {
 
-            double[,,,] policy = new double[Variables.SIM_TIME, 21, 21, 3];
+            double[,,,] policy = new double[Variables.SIM_TIME, 21, 21, 5];
 
             for (int t = 0; t < Variables.SIM_TIME; t++)
             {
-                for (int i = 0; i < 1; i++)
+                for (int i = 0; i < 21; i++)
                 {
-                    for (int j = 0; j < 1; j++)
+                    for (int j = 0; j < 21; j++)
                     {
-                        for (int k = 0; k < 3; k++)
+                        for (int k = 0; k < 5; k++)
                         {
                             policy[t, i, j, k] = 0.0;
                         }
@@ -363,17 +363,23 @@ namespace Envinorment
                     Console.WriteLine(Episodes);
                     Thread.Sleep(1000);
                 }
-                int basic_action = Variables.I[1].LOT_SIZE_ORDER;
+                
                 for (int day = 0; day < Variables.SIM_TIME; day++)
                 {
-
                     simsharp_env.Run(TimeSpan.FromDays(1));
                     int previous_Product = Production.Output_inventory.Level;
                     int previous_Raw = Production.Input_inventories[0].Level;
                     //Console.WriteLine($"\n===================Day {day + 1} Start===================\n");
+                    if(previous_Raw < 0)
+                    {
+                        previous_Raw = 0;
+                    }
+                    if (previous_Product < 0)
+                    {
+                        previous_Product = 0;
+                    }
 
-
-                    for (int action = 0; action < 3; action++)
+                    for (int action = 0; action < 5; action++)
                     {
                         dictionary.I[1].LOT_SIZE_ORDER = action;
                         int shortage = Variables.I[0].DEMAND_QUANTITY - action;
@@ -392,7 +398,7 @@ namespace Envinorment
                     }
                     double previous = -999999999999999;
 
-                    for (int action = 0; action < 3; action++)
+                    for (int action = 0; action < 5; action++)
                     {
 
                         dictionary.I[1].LOT_SIZE_ORDER = action;
@@ -403,7 +409,7 @@ namespace Envinorment
                         }
                         double reward = previous_Raw + previous_Product * 3;
                         double next_value = policy[day, previous_Product, previous_Raw, action] - ((previous_Raw + action) + (previous_Product + action) * 3 + shortage * 5);
-                        double temp = reward + Math.Pow(gamma, day) * next_value;
+                        double temp = -reward + Math.Pow(gamma, day) * next_value;
                         if (temp == previous)
                         {
                             max_index = action;
@@ -435,7 +441,7 @@ namespace Envinorment
             }
             for (int day = 0; day < Variables.SIM_TIME; day++)
             {
-                Console.WriteLine($"============{day}============");
+                Console.WriteLine($"============{day+1}============");
                 Console.WriteLine(indexes[day]);
 
             }
